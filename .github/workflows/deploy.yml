@@ -1,0 +1,38 @@
+name: Build and Deploy API
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Cho phép bạn bấm nút chạy thủ công nếu muốn
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Biên dịch file text sang JSON
+        run: node parse.js
+
+      - name: Cấu hình Pages
+        uses: actions/configure-pages@v4
+
+      - name: Tải lên thư mục public
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public'
+
+      - name: Triển khai lên GitHub Pages
+        uses: actions/deploy-pages@v4
