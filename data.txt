@@ -1,0 +1,12 @@
+ - id: 1
+ -- title: bản tin 1
+ -- url: 1234.com/1
+ -- thumbnailUrl: 1234.com/1.jpg
+ - id: 2
+ -- title: bản tin 2
+ -- url: 1234.com/2
+ -- thumbnailUrl: 1234.com/2.jpg
+ - id: 3
+ -- title: bản tin 3
+ -- url: 1234.com/3
+ -- thumbnailUrl: 1234.com/3.jpg
