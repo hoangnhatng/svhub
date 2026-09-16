@@ -1,12 +1,12 @@
  - id: 1
- -- title: bản tin 1
+ -- title: [Miễn Phí] Bản vẽ hoa văn 2609
  -- url: 961815.xyz
  -- thumbnailUrl: 1234.com/1.jpg
  - id: 2
- -- title: bản tin 2
+ -- title: [Khuyễn mãi 🔥 9/9] Phụ kiện Laser chính hãng
  -- url: 961815.xyz
  -- thumbnailUrl: 1234.com/2.jpg
  - id: 3
- -- title: bản tin 3
+ -- title: [Quà tặng] Bản vẽ mùa trung thu
  -- url: 961815.xyz
  -- thumbnailUrl: 1234.com/3.jpg
