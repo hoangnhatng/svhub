@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Cấu hình thông tin URL tuyệt đối của bạn
-const BASE_URL = "https://github.io";
+const BASE_URL = "https://hoangnhatng.github.io/svhub";
 
 // Hàm tự động tìm đuôi mở rộng của ảnh dựa vào ID
 function findImageExtension(id) {
