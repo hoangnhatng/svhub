@@ -107,7 +107,7 @@ syncThumbnailFolder(path.join(__dirname, 'thumbnail'), path.join(__dirname, 'pub
 convertTxtToExtJson(
     path.join(__dirname, 'lib', 'data.txt'),
     path.join(__dirname, 'lib', 'thumbnail'),
-    path.join(__dirname, 'public', 'lib', 'lib.json'),
+    path.join(__dirname, 'public', 'lib.json'),
     '/lib/thumbnail/' // sub-path của url ảnh mới
 );
 syncThumbnailFolder(path.join(__dirname, 'lib', 'thumbnail'), path.join(__dirname, 'public', 'lib', 'thumbnail'));
