@@ -5,7 +5,7 @@ const PROTOCOL = "https://";
 const DOMAIN = "hoangnhatng.github.io";
 const REPO_NAME = "svhub";
 
-// Hàm tìm đuôi mở rộng của ảnh dựa vào ID và đường dẫn thư mục thumbnail cụ thể
+// Hàm tìm đuôi mở rộng của ảnh dựa vào ID
 function findImageExtension(id, thumbDir) {
     if (!fs.existsSync(thumbDir)) return 'jpg';
     const extensions = ['jpg', 'jpeg', 'png', 'webp'];
@@ -17,8 +17,8 @@ function findImageExtension(id, thumbDir) {
     return 'jpg';
 }
 
-// Hàm tổng quát để chuyển đổi file text sang JSON
-function convertTxtToExtJson(txtFilePath, thumbSourceDir, outputJsonPath, urlSubPath) {
+// Hàm xử lý bảng Markdown thành JSON
+function convertMarkdownTableToJSON(txtFilePath, thumbSourceDir, outputJsonPath, urlSubPath) {
     try {
         if (!fs.existsSync(txtFilePath)) {
             console.log(`Bỏ qua: Không tìm thấy file ${txtFilePath}`);
@@ -28,38 +28,43 @@ function convertTxtToExtJson(txtFilePath, thumbSourceDir, outputJsonPath, urlSub
         const fileContent = fs.readFileSync(txtFilePath, 'utf-8');
         const lines = fileContent.split('\n');
         const result = [];
-        let currentItem = null;
 
-        lines.forEach(line => {
+        lines.forEach((line, index) => {
             const trimmed = line.trim();
             if (!trimmed) return;
 
-            if (trimmed.startsWith('- id:')) {
-                if (currentItem) result.push(currentItem);
-                
-                const idValue = parseInt(trimmed.replace('- id:', '').trim());
-                const ext = findImageExtension(idValue, thumbSourceDir);
+            // Bỏ qua dòng tiêu đề và dòng gạch ngang phân cách của bảng Markdown
+            if (index === 0 && trimmed.toLowerCase().includes('id')) return;
+            if (trimmed.includes('---') || trimmed.includes('-|-')) return;
 
-                // Tự động tạo link tuyệt đối dựa trên vị trí lưu ảnh (gốc hoặc trong thư mục lib)
+            // Tách các cột dựa trên dấu gạch đứng '|'
+            // Ví dụ: "| 1 | title | url |" tách thành ["", "1", "title", "url", ""]
+            const columns = trimmed.split('|').map(col => col.trim());
+
+            // Một dòng hợp lệ phải có đủ các cột dữ liệu (sau khi split sẽ có ít nhất 4 phần tử do có dấu | ở đầu và cuối)
+            if (columns.length >= 4 && columns[1]) {
+                const idValue = parseInt(columns[1]);
+                if (isNaN(idValue)) return; // Bỏ qua nếu cột id không phải là số
+
+                const titleValue = columns[2] || "";
+                let urlValue = columns[3] || "";
+                
+                if (urlValue) {
+                    urlValue = urlValue.startsWith('http') ? urlValue : PROTOCOL + urlValue;
+                }
+
+                const ext = findImageExtension(idValue, thumbSourceDir);
                 const absoluteThumbUrl = PROTOCOL + DOMAIN + "/" + REPO_NAME + urlSubPath + idValue + "." + ext;
 
-                currentItem = {
+                result.push({
                     id: idValue,
-                    title: "",
-                    url: "",
+                    title: titleValue,
+                    url: urlValue,
                     thumbnailUrl: absoluteThumbUrl
-                };
-            } else if (currentItem && trimmed.startsWith('-- title:')) {
-                currentItem.title = trimmed.replace('-- title:', '').trim();
-            } else if (currentItem && trimmed.startsWith('-- url:')) {
-                let url = trimmed.replace('-- url:', '').trim();
-                currentItem.url = url.startsWith('http') ? url : PROTOCOL + url;
+                });
             }
         });
 
-        if (currentItem) result.push(currentItem);
-
-        // Đảm bảo thư mục chứa file JSON đầu ra tồn tại
         const parsedOutputDir = path.dirname(outputJsonPath);
         if (!fs.existsSync(parsedOutputDir)) fs.mkdirSync(parsedOutputDir, { recursive: true });
         
@@ -72,7 +77,6 @@ function convertTxtToExtJson(txtFilePath, thumbSourceDir, outputJsonPath, urlSub
     }
 }
 
-// Hàm đồng bộ (copy) thư mục ảnh dữ liệu
 function syncThumbnailFolder(srcDir, destDir) {
     if (fs.existsSync(srcDir)) {
         if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
@@ -80,7 +84,6 @@ function syncThumbnailFolder(srcDir, destDir) {
         files.forEach(file => {
             const srcFile = path.join(srcDir, file);
             const destFile = path.join(destDir, file);
-            // Chỉ copy file, bỏ qua nếu là thư mục con
             if (fs.lstatSync(srcFile).isFile()) {
                 fs.copyFileSync(srcFile, destFile);
             }
@@ -90,24 +93,22 @@ function syncThumbnailFolder(srcDir, destDir) {
 }
 
 // === CHẠY TIẾN TRÌNH ===
-
-// 1. Tạo thư mục public tổng nếu chưa có
 if (!fs.existsSync('public')) fs.mkdirSync('public');
 
-// 2. Xử lý API 1: Bản tin cũ (Nằm ở gốc)
-convertTxtToExtJson(
+// 1. Xử lý API 1: Tin tức (Gốc)
+convertMarkdownTableToJSON(
     path.join(__dirname, 'data.txt'),
     path.join(__dirname, 'thumbnail'),
     path.join(__dirname, 'public', 'news.json'),
-    '/thumbnail/' // sub-path của url ảnh
+    '/thumbnail/'
 );
 syncThumbnailFolder(path.join(__dirname, 'thumbnail'), path.join(__dirname, 'public', 'thumbnail'));
 
-// 3. Xử lý API 2: Thư viện mới (Nằm trong thư mục lib)
-convertTxtToExtJson(
+// 2. Xử lý API 2: Thư viện (Trong thư mục lib)
+convertMarkdownTableToJSON(
     path.join(__dirname, 'lib', 'data.txt'),
     path.join(__dirname, 'lib', 'thumbnail'),
     path.join(__dirname, 'public', 'lib.json'),
-    '/lib/thumbnail/' // sub-path của url ảnh mới
+    '/lib/thumbnail/'
 );
 syncThumbnailFolder(path.join(__dirname, 'lib', 'thumbnail'), path.join(__dirname, 'public', 'lib', 'thumbnail'));
