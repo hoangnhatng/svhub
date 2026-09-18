@@ -108,7 +108,7 @@ syncThumbnailFolder(path.join(__dirname, 'thumbnail'), path.join(__dirname, 'pub
 convertMarkdownTableToJSON(
     path.join(__dirname, 'lib', 'data.txt'),
     path.join(__dirname, 'lib', 'thumbnail'),
-    path.join(__dirname, 'public', 'lib', 'lib.json'),
+    path.join(__dirname, 'public', 'lib.json'),
     '/lib/thumbnail/'
 );
 syncThumbnailFolder(path.join(__dirname, 'lib', 'thumbnail'), path.join(__dirname, 'public', 'lib', 'thumbnail'));
