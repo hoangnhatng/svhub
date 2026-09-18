@@ -38,17 +38,17 @@ function convertMarkdownTableToJSON(txtFilePath, thumbSourceDir, outputJsonPath,
             if (trimmed.includes('---') || trimmed.includes('-|-')) return;
 
             // Tách các cột dựa trên dấu gạch đứng '|'
-            // Ví dụ: "| 1 | title | url |" tách thành ["", "1", "title", "url", ""]
             const columns = trimmed.split('|').map(col => col.trim());
 
-            // Một dòng hợp lệ phải có đủ các cột dữ liệu (sau khi split sẽ có ít nhất 4 phần tử do có dấu | ở đầu và cuối)
+            // Một dòng hợp lệ phải có đủ các cột dữ liệu
             if (columns.length >= 4 && columns[1]) {
                 const idValue = parseInt(columns[1]);
                 if (isNaN(idValue)) return; // Bỏ qua nếu cột id không phải là số
 
-                const titleValue = columns[2] || "";
-                let urlValue = columns[3] || "";
+                // BUG FIX: Tự động loại bỏ tất cả các dấu gạch chéo ngược \ do Joplin tự sinh ra
+                const titleValue = (columns[2] || "").replace(/\\/g, '');
                 
+                let urlValue = columns[3] || "";
                 if (urlValue) {
                     urlValue = urlValue.startsWith('http') ? urlValue : PROTOCOL + urlValue;
                 }
@@ -108,7 +108,7 @@ syncThumbnailFolder(path.join(__dirname, 'thumbnail'), path.join(__dirname, 'pub
 convertMarkdownTableToJSON(
     path.join(__dirname, 'lib', 'data.txt'),
     path.join(__dirname, 'lib', 'thumbnail'),
-    path.join(__dirname, 'public', 'lib.json'),
+    path.join(__dirname, 'public', 'lib', 'lib.json'),
     '/lib/thumbnail/'
 );
 syncThumbnailFolder(path.join(__dirname, 'lib', 'thumbnail'), path.join(__dirname, 'public', 'lib', 'thumbnail'));
